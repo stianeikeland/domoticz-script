@@ -8,8 +8,8 @@ local thermostat = 'Termostat stue'
 local thermometer = 'Temperatur Stue'
 local heaters = {'Ovn kjokken', 'Ovn stue'}
 
-local temperature = otherdevices[thermometer]
-local target = otherdevices[thermostat]
+local temperature = tonumber(otherdevices[thermometer])
+local target = tonumber(otherdevices[thermostat])
 
 ---
 
@@ -49,19 +49,20 @@ if (otherdevices[activeswitch] == "Off") then
 end
 
 -- Turn off heating if thermometer data is too old.
-if (timedifference(otherdevices_lastupdate[thermometer]) > 60 * 30) then
+if (timedifference(otherdevices_lastupdate[thermometer]) > 60 * 30 * 10) then
    print("Sensor data is too old!")
-   commandArray = turnHeaters("Off")
+   commandArray = turnHeaters("Off") 
    return commandArray
 end
 
 debugPrint(string.format("Temperature: %.1f", temperature))
 debugPrint(string.format("Target: %.1f", target))
+debugPrint(string.format("Hysteresis: %.1f", hysteresis))
 
-if (target - temperature > hysteresis) then
+if (temperature < target - hysteresis) then
    debugPrint("Heat on!")
    commandArray = turnHeaters("On")
-else
+elseif (temperature >= target) then
    debugPrint("Heat off!")
    commandArray = turnHeaters("Off")
 end
